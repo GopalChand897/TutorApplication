@@ -53,17 +53,17 @@ import 'package:testproject/Models/UserModel.dart';
 import 'package:testproject/Services/firebase_auth_methods.dart';
 
 class UserProvider with ChangeNotifier {
-  User? _user;
+  UserModel? _user;
  //  final AuthMethods _authMethods = AuthMethods();
 final AuthMethods _authMethods = AuthMethods();
-  User get getUser => _user!;
+  UserModel get getUser => _user!;
     // User? get getUser => _user;
 
   // bool get isLoggedIn => _user != null;
 
   Future<void> refreshUser() async {
     
-     User user = await _authMethods.getUserDetails();
+     UserModel user = await _authMethods.getUserDetails();
      _user = user;
      notifyListeners();
   }

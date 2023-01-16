@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 
 class CustomTextField extends StatelessWidget {
 //  final ValueChanged<String> onChanged;
-  //  final TextEditingController controller;
- final TextEditingController textEditingController; 
+    final TextEditingController controller;
+//  final TextEditingController textEditingController; 
   final bool isPass;
   final String hintText;
 
   const CustomTextField({
     Key? key,
- required this.textEditingController,
+//  required this.textEditingController,
  this.isPass = false,
- //  required this.controller,
+   required this.controller,
   //  required this.onChanged,
     required this.hintText, 
   }) : super(key: key);
@@ -20,8 +20,8 @@ class CustomTextField extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextField(
   //  onChanged: onChanged,
-    //   controller: controller,
-      controller: textEditingController,
+       controller: controller,
+     // controller: textEditingController,
       decoration: InputDecoration(
     border: OutlineInputBorder(
              borderSide: BorderSide(

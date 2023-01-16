@@ -3,8 +3,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:testproject/Services/StorageMethod.dart';
 import 'package:testproject/Utils/show_snack_bar.dart';
 import 'package:testproject/Models/UserModel.dart' as model;
+import 'package:testproject/screen/Dashboard.dart';
 
 //FIREBASE AUTHENTICATION
 // class FirebaseAuthMethods {
@@ -44,7 +46,10 @@ class AuthMethods {
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
 final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  User get user => _auth.currentUser!;
 
+  // STATE PERSISTENCE STREAM
+  Stream<User?> get authState => FirebaseAuth.instance.authStateChanges();
 
 //+++ User get user => _auth.currentUser!; 
 
@@ -53,17 +58,7 @@ final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   
 
 
-  // get user details
-  Future<model.User> getUserDetails() async {
-    User currentUser = _auth.currentUser!;
 
-   // DocumentSnapshot documentSnapshot =
-   DocumentSnapshot snap =
-        await _firestore.collection('users').doc(currentUser.uid).get();
-
- //   return model.User.fromSnap(documentSnapshot);
- return model.User.fromSnap(snap);
-  }
 
   //     final TextEditingController emailController = TextEditingController();
   // final TextEditingController passwordController = TextEditingController();
@@ -284,20 +279,39 @@ final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   //   }
   // }
 
+
+  // get user details
+  Future<model.UserModel> getUserDetails() async {
+    User currentUser = _auth.currentUser!;
+
+   // DocumentSnapshot documentSnapshot =
+   DocumentSnapshot snap =
+        await _firestore.collection('users').doc(currentUser.uid).get();
+
+
+//  if(snap.data() != null) {
+//       userModel = UserModel.fromMap(docSnap.data() as Map<String, dynamic>);
+//       //  userModel = User.toJson() as User?;
+//     }
+ //   return model.User.fromSnap(documentSnapshot);
+  return model.UserModel.fromMap(snap.data() as Map<String, dynamic>);
+  }
+  
+
+  
  // Signing Up User
 
   Future<String> signUpUser({
     required String email,
     required String password,
+    required String name,
     required String username,
-    // required String bio,
+    // required String bio, 
    // required Uint8List file,
   }) async {
     String res = "Some error Occurred";
     try {
-      if (email.isNotEmpty ||
-          password.isNotEmpty ||
-          username.isNotEmpty 
+      if (email.isNotEmpty ||password.isNotEmpty ||name.isNotEmpty || username.isNotEmpty
           // ||
           // bio.isNotEmpty ||
           // file != null
@@ -306,18 +320,42 @@ final FirebaseFirestore _firestore = FirebaseFirestore.instance;
         UserCredential cred = await _auth.createUserWithEmailAndPassword(
           email: email,
           password: password,
+        
         );
 
         // String photoUrl =
         //     await StorageMethods().uploadImageToStorage('profilePics', file, false);
+      // final getimage = <String>[];
+      // @override
+      // void onReady(){
+      //   super.onReady();
+      // }
+      //  getRandomImage() async{
+      //   List<String> imgName = ["random"];
+      //   try{
+      //   for(var img in imgName){
+      //   final photoUrl=
+      //       await Get.find<StorageMethods>().getImage(img);
+      //  getimage.add(photoUrl);
+      //   }
+      //   } catch(e){print(e);}
+      //  }
 
-        model.User user = model.User(
-          name: username,
+        // String photoUrl =
+        //     await StorageMethods().getImage('profilePics', file, false);
+// .then((value) {
+//   var userUpdateInfo = UserUpdatedInfo();
+//   userUpdateInfo.photoUrl = 'https://firebasestorage.googleapis.com/v0/b/hometutorapp-e9529.appspot.com/o/constant%2Frandom.png?alt=media&token=2e2b598d-b5c7-4604-a658-889e877faa91';
+// }
+// );
+        model.UserModel user = model.UserModel(
+          // name: name,
+          username: username,
           uid: cred.user!.uid,
-       //   photoUrl: photoUrl,
+          photoUrl: "",
           email: email,
           password: password,
-          // bio: bio,
+          bio: "",
           // followers: [],
           // following: [],
         );
@@ -326,8 +364,8 @@ final FirebaseFirestore _firestore = FirebaseFirestore.instance;
         await _firestore
             .collection("users")
             .doc(cred.user!.uid)
-            .set(user.toJson());
-
+            .set(user.toMap());
+//.set(user.toMap());
         res = "success";
       } else {
         res = "Please enter all the fields";
@@ -419,6 +457,11 @@ final FirebaseFirestore _firestore = FirebaseFirestore.instance;
           UserCredential userCredential =
               await _auth.signInWithCredential(credential);
 
+              //       User userCredential =
+              // (await _auth.signInWithCredential(credential)).user!;
+              //save values in userCredential
+    
+
        }
     } on FirebaseAuthException catch (e) {
       showSnackBar(context, e.message!); // Displaying the error message
@@ -426,13 +469,26 @@ final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   }
   // // FACEBOOK SIGN IN
   Future<void> signInWithFacebook(BuildContext context) async {
+  
     try {
       final LoginResult loginResult = await FacebookAuth.instance.login();
+final userData = await FacebookAuth.instance.getUserData();
 
       final OAuthCredential facebookAuthCredential =
           FacebookAuthProvider.credential(loginResult.accessToken!.token);
 
       await _auth.signInWithCredential(facebookAuthCredential);
+
+await FirebaseFirestore.instance.collection('users').add({
+  'email': userData['email'],
+  'profileImage': userData['profileImage'],
+  'name': userData['name'],
+});
+
+// Navigator.of(context).pushAndRemoveUntil(
+//   MaterialPageRoute(builder: (_)=>Dashboard()),
+//  (route) => false);
+
     } on FirebaseAuthException catch (e) {
       showSnackBar(context, e.message!); // Displaying the error message
     }

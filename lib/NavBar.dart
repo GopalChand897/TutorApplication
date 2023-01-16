@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import 'package:testproject/Pages/LoginPage.dart';
 import 'package:testproject/screen/login_signup.dart';
 
 class NavBar extends StatelessWidget {
@@ -71,7 +72,8 @@ class NavBar extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                     builder: (context) {
-                      return LoginSignupScreen();
+                      // return LoginSignupScreen();
+                      return LoginPage();
                     },
                   ),
                 );
